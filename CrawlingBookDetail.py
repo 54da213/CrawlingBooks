@@ -2,6 +2,7 @@
 
 import json
 import re
+import time
 
 import requests
 from bs4 import BeautifulSoup
@@ -29,6 +30,13 @@ class WebCrawler(object):
             firefox.get(chapter_start_url)
         except Exception as e:
             return [], None
+        #网络时整个页面没有加载外全会导致抓取内容错误
+        #直接调用sheep对整个线程不安全 故采用 ▲t1-▲t2的方式拖延程序
+        start_time=int(time.time())
+        while True:
+            end_time=int(time.time())
+            if end_time-start_time>=1:
+                break
         #弃用此方案
         #r = requests.get(chapter_start_url)
         # if r.status_code != 200:
@@ -81,5 +89,4 @@ def app():
 
 
 if __name__ == '__main__':
-    print "test"
     app()
