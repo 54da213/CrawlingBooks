@@ -5,6 +5,7 @@ import re
 
 import requests
 from bs4 import BeautifulSoup
+from selenium import webdriver
 
 from utils import R, IO
 
@@ -22,16 +23,20 @@ class WebCrawler(object):
         return chapter_start_url, total_zhangjie
 
     def __get_text(self, chapter_start_url):
-        r = requests.get(chapter_start_url)
-        if r.status_code != 200:
+        #文章正文部分是js 用selenium模拟浏览器获取html页面
+        try:
+            firefox=webdriver.Firefox()
+            firefox.get(chapter_start_url)
+        except Exception as e:
             return [], None
-        soup = BeautifulSoup(r.text, "html5lib")
+        #弃用此方案
+        #r = requests.get(chapter_start_url)
+        # if r.status_code != 200:
+        #     return [], None
+        soup = BeautifulSoup(firefox.page_source, "html5lib")
         ps = soup.select("#chapter-content p")
-        print ps
-        print len(ps)
         chapter_next_url = soup.select("div[class='pages'] a[class='next']")[0]["href"]
         text_list = ["{0}\n".format(p.string.encode("utf-8")) for p in ps if p.string]
-        print len(text_list)
         return text_list, chapter_next_url
 
     def book(self, chapter_start_url, book_name, total_zhangjie, prefix):
