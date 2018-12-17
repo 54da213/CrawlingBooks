@@ -4,6 +4,9 @@ import os
 
 import redis
 
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+
 class R(object):
     def __init__(self):
         self.r=redis.Redis(host='127.0.0.1', port=6379, db=0)
@@ -31,3 +34,12 @@ class IO(object):
         with open(path,'w') as f:
             f.writelines(text_list)
 
+def dr():
+    '''
+    无头浏览器
+    :return:
+    '''
+    options = Options()
+    options.add_argument('-headless')
+    driver = webdriver.Firefox(firefox_options=options)
+    return driver

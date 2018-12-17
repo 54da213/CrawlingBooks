@@ -65,14 +65,11 @@ def app():
         total = int(wc.total)
     except Exception as e:
         print "Err get total:{0}".format(e.message)
-    #threads = []
+
     for page in xrange(1, total + 1):
         t = threading.Thread(target=wc.get_book_list, args=(page,))
         t.daemon=False
         t.start()
-    #     threads.append(t)
-    # for t in threads:
-    #     t.join()
 
 
 if __name__ == '__main__':
