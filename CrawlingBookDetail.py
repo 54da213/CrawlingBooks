@@ -4,11 +4,15 @@ import json
 import re
 import time
 import threading
+import logging
 
 import requests
 from bs4 import BeautifulSoup
 
 from utils import R, IO, dr
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    filename="web_crawler_log.log")
 
 
 class WebCrawler(object):
@@ -53,7 +57,7 @@ class WebCrawler(object):
         driver.quit()
         io = IO()
         io.write(text_list, book_name, topic)
-        print ("--------------------{0}{1} ..下载完成--------------------".format(book_name.encode("utf-8"), topic))
+        logging.info("--------------------{0}{1} ..下载完成--------------------".format(book_name.encode("utf-8"), topic))
 
     def __get_chapter(self, chapter_start_url, book_name, total_zhangjie):
         '''
@@ -90,23 +94,24 @@ def app():
     :return:
     '''
     r = R()
-    keys_it = iter(r.r.hkeys("bookshelf"))
+    keys_it = iter(r.r.hkeys("bookshelf")[0:2])
     prefix = "https://www.4wens.com"
     for key in keys_it:
         book_info = json.loads(r.r.hget("bookshelf", key))
         uri = book_info[0]
         book_name = book_info[1]
-        print "{0} init...".format(book_name.encode("utf-8"))
+        logging.info("{0} init...".format(book_name.encode("utf-8")))
         url = "{0}{1}".format(prefix, uri)
         wc = WebCrawler()
         # 获取每本书第一章节url
         chapter_start_url, total_zhangjie = wc.init_page(url, prefix)
         if not (chapter_start_url and total_zhangjie):
-            print "{0}------>init..失败".format(book_name)
+            logging.warning("{0}------>init..失败".format(book_name))
             continue
-        print "{0} init 完成 download..".format(book_name.encode("utf-8"))
+        logging.info("{0} init 完成 download..".format(book_name.encode("utf-8")))
         wc.download_book(chapter_start_url, book_name, int(total_zhangjie))
-        print "--------------------{0}-----------------下载完成..".format(book_name.encode("utf-8"))
+        logging.info("--------------------{0}-----------------下载完成..".format(book_name.encode("utf-8")))
+        r.r.hdel("bookshelf", key)
 
 
 if __name__ == '__main__':
